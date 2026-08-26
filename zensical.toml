@@ -11,8 +11,8 @@ site_name = "Tayra AI documentation"
 # edit_uri = "edit/main/docs/"
 
 nav = [
-  { "Get started" = "index.md" },
-  { "Markdown in 5min" = "markdown.md" },
+  { "About Tayra" = "index.md" },
+  { "Embedded page" = "embedded-page.md" },
 ]
 
 # extra_css = ["stylesheets/extra.css"]
@@ -21,7 +21,7 @@ nav = [
 [project.theme]
 # variant = "classic"
 # custom_dir = "overrides"
-# favicon = "images/favicon.png"
+favicon = "images/favicon.png"
 language = "en"
 features = [
   "announce.dismiss",
@@ -87,6 +87,13 @@ toggle.name = "Switch to system preference"
 # link = "https://fosstodon.org/@user"
 
 [project.markdown_extensions]
+
+zensical.extensions.macros.include_yaml = [
+  "data/variables.yml",
+]
+zensical.extensions.macros.j2_variable_start_string = "<?"
+zensical.extensions.macros.j2_variable_end_string = "?>"
+
 abbr = {}
 admonition = {}
 attr_list = {}
