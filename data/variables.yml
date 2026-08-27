@@ -1,3 +1,5 @@
 API_BASE_URL: "api.tayra.health"
 embedded_page:
   polling_timeout: "25"
+  launch_token_ttl: "60"
+  min_poll_s: "5"
