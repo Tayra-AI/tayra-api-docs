@@ -2,7 +2,7 @@
 icon: lucide/app-window
 ---
 
-# Embedded Page Integration Guide
+# Embedded Page
 
 !!! warning "Placeholders"
 

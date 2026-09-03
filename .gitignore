@@ -3,3 +3,4 @@ venv
 .cache
 site
 .claude
+.DS_Store
