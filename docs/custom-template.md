@@ -278,7 +278,7 @@ These keywords are fully supported. Your schema may use any combination of them.
 | Definitions | `$ref`                 | Only local references: `#/$defs/...`                                  |
 | Annotation  | `title`                | Human-readable name for the field or schema                           |
 | Annotation  | `description`          | Detailed description of the field                                     |
-| Validation  | `enum`                 | List of allowed values (strings only in practice)                     |
+| Validation  | `enum`                 | List of allowed values |
 | Validation  | `const`                | Single allowed value                                                  |
 | Composition | `anyOf`                | **Nullable unions only**: branches must be type/`$ref` + `"null"`. Not allowed at root level |
 
