@@ -53,13 +53,27 @@ POST /v1/sessions
 Authorization: Bearer <api_key>
 ```
 
-**Option A** — you define the note structure:
+**Option A** — you define the note structure (see [Custom Template](custom-template.md)):
 
 ```json
 { "title":    "Follow-up",
   "locale":   "en-US",
 
-  "template": {...}
+  "template": {
+    "type": "object",
+    "properties": {
+      "symptoms": {
+        "type": "array",
+        "description": "List of reported symptoms",
+        "items": { "type": "string" }
+      },
+      "diagnosis": {
+        "type": ["string", "null"],
+        "description": "Clinical diagnosis"
+      }
+    },
+    "required": ["symptoms", "diagnosis"]
+  }
 }
 ```
 

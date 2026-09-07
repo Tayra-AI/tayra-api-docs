@@ -105,6 +105,8 @@ For non-`inline` formats, the output field name defaults to the `coding_system` 
 
 ## Schema Examples
 
+Complete runnable projects are available in the [`examples/`](https://github.com/Tayra-AI/tayra-api-docs/tree/main/examples) directory.
+
 All examples below define the same **Visit Report** &mdash; a schema with typed properties, nullable fields, nested objects, arrays, enums, and Tayra's `metadata` extension for ICD-10 coding. Each language produces a Tayra-compatible JSON Schema; minor differences (e.g. `anyOf` vs `type` array for nullable) are all accepted.
 
 === "Python"

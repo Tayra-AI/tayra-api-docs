@@ -1,0 +1,9 @@
+# docs/examples build artifacts
+**/node_modules/*
+**/schema.json
+**/csharp/bin/
+**/csharp/obj/
+**/java/.gradle/
+**/java/build/
+**/package-lock.json
+**/__pycache__/
