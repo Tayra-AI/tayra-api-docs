@@ -1,5 +1,9 @@
 API_BASE_URL: "api.tayra.health"
+APP_BASE_URL: "tayra.health"
 embedded_page:
   polling_timeout: "25"
   launch_token_ttl: "60"
   min_poll_s: "5"
+  max_fields: "5000"
+  max_label_len: "120000"
+  note_retention: "1 hour"
