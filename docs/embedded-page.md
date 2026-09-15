@@ -41,10 +41,6 @@ sequenceDiagram
 
 ## 1. Create a session
 
-!!! warning "No patient identifiers in requests"
-
-    Tayra receives no patient data. `title` is the only free-text field you send. **Never put names, DOB, MRNs, or any identifier in it.**
-
 Call when the clinician opens the encounter, not in advance. The launch URL is short-lived.
 
 ```
