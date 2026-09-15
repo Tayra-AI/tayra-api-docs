@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIS Simulator</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: monospace; margin: 0; padding: 12px; font-size: 13px; }
+  h2 { margin: 0 0 8px; }
+  h3 { margin: 0 0 4px; font-size: 13px; }
+  label { display: block; margin: 2px 0; }
+  input[type=text], input[type=password], textarea, select { width: 100%; font-family: monospace; font-size: 12px; padding: 3px; }
+  textarea { height: 160px; resize: vertical; }
+  button { margin: 2px 4px 2px 0; padding: 5px 12px; cursor: pointer; }
+  button:disabled { opacity: .35; cursor: default; }
+  pre { background: #f4f4f4; padding: 6px; white-space: pre-wrap; word-break: break-word; margin: 0; overflow-y: auto; font-size: 11px; }
+  fieldset { border: 1px solid #ccc; padding: 8px; margin: 0 0 8px; }
+  fieldset:disabled { opacity: .5; }
+  legend { font-weight: bold; }
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; min-width: 0; }
+  .toolbar { margin: 6px 0; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .toolbar .info { margin-left: 8px; color: #666; font-size: 11px; }
+
+  .main { display: flex; gap: 12px; margin-top: 8px; }
+  .main-left { flex: 1; min-width: 0; }
+  .main-right { flex: 1; min-width: 0; }
+
+  #iframe-wrap { border: 2px solid #ccc; background: #fafafa; min-height: 800px; position: relative; }
+  #iframe-wrap iframe { width: 100%; height: 100%; border: none; position: absolute; inset: 0; }
+  #iframe-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #aaa; }
+
+  .panel { border: 1px solid #ddd; padding: 8px; }
+  .panel pre { max-height: 400px; }
+</style>
+</head>
+<body>
+
+<h2>MIS Simulator</h2>
+
+<fieldset id="formFields">
+  <legend>Session config</legend>
+  <div class="row">
+    <label>API URL<input type="text" id="apiUrl" value="https://api-dev.tayra.health"></label>
+    <label>API Key<input type="password" id="apiKey" placeholder="paste API key"></label>
+  </div>
+  <div class="row">
+    <label>Title<input type="text" id="title" value="Demo visit"></label>
+    <label>Locale <small>(spoken language)</small><select id="locale">
+      <option value="en">English</option>
+      <option value="uk">Ukrainian</option>
+      <option value="pl">Polish</option>
+      <option value="fr">French</option>
+      <option value="lv">Latvian</option>
+    </select></label>
+    <label>Doctor ID<input type="text" id="doctorId" placeholder="optional"></label>
+  </div>
+  <label>Template
+    <textarea id="template">{
+  "type": "object",
+  "properties": {
+    "complaints": {
+      "type": "object",
+      "title": "Complaints",
+      "description": "Patient complaints",
+      "properties": {
+        "main": {
+          "type": "string",
+          "title": "Chief complaint",
+          "description": "Primary reason for the visit in the patient's own words"
+        },
+        "duration": {
+          "type": "string",
+          "title": "Duration",
+          "description": "How long symptoms have been present, e.g. '3 days', 'since Monday'"
+        }
+      }
+    },
+    "examination": {
+      "type": "string",
+      "title": "Examination",
+      "description": "Clinical findings from oral/physical examination including affected teeth, tissues, and pathology observed"
+    },
+    "diagnosis": {
+      "type": "string",
+      "title": "Diagnosis",
+      "description": "Clinical diagnosis with ICD-10 code if mentioned, e.g. 'K04.4 — Acute apical periodontitis'",
+      "metadata": {
+        "coding_system": "icd10",
+        "coding_format": "inline"
+      }
+    },
+    "treatment": {
+      "type": "string",
+      "title": "Treatment",
+      "description": "Procedures performed and prescribed medications with dosages"
+    }
+  }
+}</textarea>
+  </label>
+</fieldset>
+
+<div class="toolbar">
+  <button id="createBtn">Create &amp; Launch</button>
+  <button id="interruptBtn" disabled>Interrupt</button>
+  <button id="relaunchBtn" disabled>Relaunch</button>
+  <button id="resetBtn" disabled>Reset</button>
+  <span id="sessionLabel" class="info"></span>
+  <span id="createErr" style="color:red; margin-left:8px"></span>
+</div>
+
+<div class="main">
+  <div class="main-left">
+    <div id="iframe-wrap">
+      <div id="iframe-placeholder">iframe — create session to start</div>
+    </div>
+  </div>
+  <div class="main-right">
+    <div class="panel">
+      <h3>Polling <span id="pollTick" style="color:#aaa; font-weight:normal"></span></h3>
+      <pre id="pollResult">—</pre>
+    </div>
+    <div class="panel" style="margin-top:8px">
+      <h3>postMessage <small>— from iframe (optional delivery)</small></h3>
+      <pre id="postMessageResult">—</pre>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const $apiUrl = $('apiUrl'), $apiKey = $('apiKey'), $title = $('title');
+const $locale = $('locale'), $doctorId = $('doctorId'), $template = $('template');
+const $formFields = $('formFields');
+const $createBtn = $('createBtn'), $createErr = $('createErr');
+const $interruptBtn = $('interruptBtn'), $relaunchBtn = $('relaunchBtn'), $resetBtn = $('resetBtn');
+const $iframeWrap = $('iframe-wrap'), $placeholder = $('iframe-placeholder');
+const $sessionLabel = $('sessionLabel');
+const $pollResult = $('pollResult'), $pollTick = $('pollTick');
+const $postMessageResult = $('postMessageResult');
+
+let sessionId = null, launchUrl = null, pollTimer = null, pollCount = 0, lastPollStatus = null;
+
+// --- Create & Launch ---
+
+$createBtn.onclick = async () => {
+  $createErr.textContent = '';
+  let tpl;
+  try { tpl = JSON.parse($template.value); } catch { $createErr.textContent = 'Invalid JSON'; return; }
+
+  const body = { title: $title.value || null, locale: $locale.value, template: tpl };
+  if ($doctorId.value.trim()) body.doctor_id = $doctorId.value.trim();
+
+  $createBtn.disabled = true;
+  try {
+    const resp = await fetch(`${$apiUrl.value}/sessions`, {
+      method: 'POST',
+      headers: { Authorization: $apiKey.value, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+    if (!resp.ok) { $createErr.textContent = `${resp.status}: ${JSON.stringify(data.detail)}`; $createBtn.disabled = false; return; }
+
+    sessionId = data.session_id;
+    launchUrl = data.launch_url;
+    $sessionLabel.textContent = `session: ${sessionId}  expires: ${data.expires_at}`;
+    $formFields.disabled = true;
+    $resetBtn.disabled = false;
+    $interruptBtn.disabled = false;
+    loadIframe(launchUrl);
+    startPolling();
+  } catch (e) { $createErr.textContent = e.message; $createBtn.disabled = false; }
+};
+
+// --- iframe ---
+
+function loadIframe(url) {
+  $placeholder.style.display = 'none';
+  const existing = $iframeWrap.querySelector('iframe');
+  if (existing) existing.remove();
+  const iframe = document.createElement('iframe');
+  iframe.allow = 'microphone';
+  iframe.src = url;
+  $iframeWrap.appendChild(iframe);
+  $interruptBtn.disabled = false;
+  $relaunchBtn.disabled = true;
+}
+
+// --- Interrupt ---
+
+$interruptBtn.onclick = () => {
+  const iframe = $iframeWrap.querySelector('iframe');
+  if (iframe) iframe.remove();
+  $placeholder.style.display = 'flex';
+  $placeholder.textContent = 'interrupted — use Relaunch';
+  $interruptBtn.disabled = true;
+  $relaunchBtn.disabled = false;
+};
+
+// --- Relaunch ---
+
+async function doRelaunch() {
+  $relaunchBtn.disabled = true;
+  try {
+    const resp = await fetch(`${$apiUrl.value}/sessions/${sessionId}/relaunch`, {
+      method: 'POST',
+      headers: { Authorization: $apiKey.value },
+    });
+    const data = await resp.json();
+    if (!resp.ok) { $relaunchBtn.disabled = false; return; }
+    launchUrl = data.launch_url;
+    loadIframe(launchUrl);
+    startPolling();
+    lastPollStatus = 'interrupted';
+  } catch (e) { $relaunchBtn.disabled = false; }
+}
+
+$relaunchBtn.onclick = doRelaunch;
+
+// --- Polling ---
+
+let pollAbort = null;
+
+async function poll() {
+  if (!sessionId) return;
+  pollCount++;
+  $pollTick.textContent = `#${pollCount}`;
+  try {
+    pollAbort = new AbortController();
+    const resp = await fetch(`${$apiUrl.value}/sessions/${sessionId}?wait=25`, {
+      headers: { Authorization: $apiKey.value },
+      signal: pollAbort.signal,
+    });
+    pollAbort = null;
+    if (resp.status === 404) {
+      $pollResult.textContent = 'Session not found (expired or cancelled)';
+      $interruptBtn.disabled = true;
+      $relaunchBtn.disabled = true;
+      return;
+    }
+    const data = await resp.json();
+    $pollResult.textContent = JSON.stringify(data, null, 2);
+
+    if (data.status !== lastPollStatus) {
+      lastPollStatus = data.status;
+      if (data.status === 'interrupted') {
+        $interruptBtn.disabled = true;
+        $relaunchBtn.disabled = false;
+      }
+      if (data.status === 'completed') {
+        $interruptBtn.disabled = true;
+        $relaunchBtn.disabled = true;
+        return;
+      }
+    }
+    poll();
+  } catch (e) {
+    pollAbort = null;
+    if (e.name === 'AbortError') return;
+    $pollResult.textContent = `Error: ${e.message}`;
+  }
+}
+
+function startPolling() { stopPolling(); pollCount = 0; lastPollStatus = null; poll(); }
+function stopPolling() { if (pollAbort) { pollAbort.abort(); pollAbort = null; } }
+
+// --- iframe postMessage ---
+
+window.addEventListener('message', (e) => {
+  if (e.data?.type === 'tayra:completed') {
+    $postMessageResult.textContent = JSON.stringify(e.data, null, 2);
+  }
+});
+
+// --- Reset ---
+
+$resetBtn.onclick = () => {
+  stopPolling();
+  const iframe = $iframeWrap.querySelector('iframe');
+  if (iframe) iframe.remove();
+  $placeholder.style.display = 'flex';
+  $placeholder.textContent = 'iframe — create session to start';
+  $formFields.disabled = false;
+  $createBtn.disabled = false;
+  $interruptBtn.disabled = true;
+  $relaunchBtn.disabled = true;
+  $resetBtn.disabled = true;
+  $pollResult.textContent = '—';
+  $postMessageResult.textContent = '—';
+  $pollTick.textContent = '';
+  $sessionLabel.textContent = '';
+  $createErr.textContent = '';
+  sessionId = null; launchUrl = null; pollCount = 0; lastPollStatus = null;
+};
+</script>
+</body>
+</html>

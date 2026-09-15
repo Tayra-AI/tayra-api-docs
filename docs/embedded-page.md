@@ -4,6 +4,9 @@ icon: lucide/app-window
 
 # Embedded Page
 
+!!! example "Working example"
+    A single-file MIS simulator implements the full integration flow below. [Open demo](https://docs.tayra.health/examples/mis.html) · [View source](https://github.com/Tayra-AI/tayra-api-docs/blob/main/examples/mis.html)
+
 ### Prerequisites
 
 1. Obtain your API key from the Tayra team during onboarding. Send as `Authorization: <api_key>`. Store server-side only.
