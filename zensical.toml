@@ -13,6 +13,7 @@ site_name = "Tayra AI documentation"
 nav = [
   { "About Tayra" = "index.md" },
   { "Custom templates" = "custom-template.md" },
+  { "Visit API" = "visit.md" },
   { "Embedded page" = "embedded-page.md" },
 ]
 

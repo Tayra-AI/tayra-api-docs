@@ -7,3 +7,5 @@ embedded_page:
   max_fields: "5000"
   max_label_len: "120000"
   note_retention: "1 hour"
+visit:
+  presigned_url_ttl: "300"
