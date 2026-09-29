@@ -101,7 +101,7 @@ Authorization: <api_key>
 | `template_id` | **Alternative to `template`.** Names a pre-configured note structure held for your tenant. Send exactly one of `template` or `template_id`. |
 | `title` | Optional. Shown in the view header so the clinician can confirm the encounter. **No patient identifiers.** |
 | `locale` | **Required.** Transcription and interface language. Two-letter ISO 639-1 code: `en`, `uk`, `pl`, `fr`, `lv`. |
-| `doctor_id` | Optional. UUID of the doctor for this encounter. |
+| `doctor_id` | Optional. UUID of the doctor for this encounter. Create via [`POST /doctors`](https://api.tayra.health/docs#/default/create_doctor_doctors_post). |
 
 
 ## 2. Embed the view

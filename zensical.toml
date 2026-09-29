@@ -15,6 +15,7 @@ nav = [
   { "Custom templates" = "custom-template.md" },
   { "Visit API" = "visit.md" },
   { "Embedded page" = "embedded-page.md" },
+  { "Swagger ↗" = "https://api.tayra.health/docs" },
 ]
 
 # extra_css = ["stylesheets/extra.css"]

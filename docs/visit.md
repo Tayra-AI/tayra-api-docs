@@ -116,7 +116,7 @@ Authorization: <api_key>
 | `template_id` | **Alternative to `template`.** UUID of a pre-configured note structure held for your tenant. Send exactly one of `template` or `template_id`. |
 | `lang_code` | **Required when using inline `template`.** Transcription and note language. Two-letter ISO 639-1 code: `en`, `uk`, `pl`, `fr`, `lv`. Ignored when using `template_id` (language comes from the stored template). |
 | `recording_id` | **Required.** UUID returned from the presigned URL step. |
-| `doctor_id` | Optional. UUID of the doctor for this encounter. |
+| `doctor_id` | Optional. UUID of the doctor for this encounter. Create via [`POST /doctors`](https://api.tayra.health/docs#/default/create_doctor_doctors_post). |
 
 **201 Created**
 
