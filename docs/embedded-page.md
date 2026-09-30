@@ -39,6 +39,40 @@ sequenceDiagram
   E->>E: write result into the chart
 ```
 
+## 0. Create a doctor (optional)
+
+Register the doctor once and reuse the returned `id` as `doctor_id` in subsequent sessions. Linking sessions to a doctor lets you track usage per clinician and view per-doctor analytics in the admin panel.
+
+```
+POST /doctors
+Authorization: <api_key>
+```
+
+```json
+{
+  "last_name":  "Smith",
+  "first_name": "Jane",
+  "patronymic": null
+}
+```
+
+**201 Created**
+
+```json
+{
+  "id":         "d4c8b1a2-...",
+  "last_name":  "Smith",
+  "first_name": "Jane",
+  "patronymic": null
+}
+```
+
+| Field | Requirement |
+|---|---|
+| `last_name` | **Required.** |
+| `first_name` | **Required.** |
+| `patronymic` | Optional. |
+
 ## 1. Create a session
 
 Call when the clinician opens the encounter, not in advance. The launch URL is short-lived.
