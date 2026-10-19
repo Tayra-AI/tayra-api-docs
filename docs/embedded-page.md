@@ -136,6 +136,7 @@ Authorization: <api_key>
 | `title` | Optional. Shown in the view header so the clinician can confirm the encounter. **No patient identifiers.** |
 | `locale` | **Required.** Transcription and interface language. Two-letter ISO 639-1 code: `en`, `uk`, `pl`, `fr`, `lv`. |
 | `doctor_id` | Optional. UUID of the doctor for this encounter. Create via [`POST /doctors`](https://api.tayra.health/docs#/default/create_doctor_doctors_post). |
+| `patient_metadata` | Optional. Object with the patient's `age` (integer, 0–150) and `gender` (single-line string, up to 32 characters). Used as context to improve the accuracy of the note, e.g. grammatical gender and age-appropriate wording. Both fields are optional. **Send only these values, no names or other patient identifiers.** |
 
 
 ## 2. Embed the view
