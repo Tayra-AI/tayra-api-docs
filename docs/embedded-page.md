@@ -41,7 +41,7 @@ sequenceDiagram
 
 ## 0. Create a doctor (optional)
 
-Register the doctor once and pass the returned `id` as `doctor_id` when creating sessions. See [Doctors](doctors.md).
+Register the doctor once, then pass the returned `id` as `doctor_id` when creating sessions — or register with your MIS identifier as `external_id` and pass it as `doctor_external_id`. See [Doctors](doctors.md).
 
 ## 1. Create a session
 
@@ -106,6 +106,7 @@ Authorization: <api_key>
 | `title` | Optional. Shown in the view header so the clinician can confirm the encounter. **No patient identifiers.** |
 | `locale` | **Required.** Transcription and interface language. Two-letter ISO 639-1 code: `en`, `uk`, `pl`, `fr`, `lv`. |
 | `doctor_id` | Optional. UUID of the doctor for this encounter. Create via [`POST /doctors`](https://api.tayra.health/docs#/default/create_doctor_doctors_post). |
+| `doctor_external_id` | Optional. **Alternative to `doctor_id`.** The doctor's MIS identifier set as `external_id` at [registration](doctors.md). Send at most one of `doctor_id` or `doctor_external_id` (both → `422`; unknown doctor → `404`). |
 | `patient_metadata` | Optional. Object with the patient's `age` (integer, 0–150) and `gender` (single-line string, up to 32 characters). Used as context to improve the accuracy of the note, e.g. grammatical gender and age-appropriate wording. Both fields are optional. **Send only these values, no names or other patient identifiers.** |
 
 

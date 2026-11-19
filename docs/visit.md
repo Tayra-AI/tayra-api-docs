@@ -33,7 +33,7 @@ sequenceDiagram
 
 ## 0. Create a doctor (optional)
 
-Register the doctor once and pass the returned `id` as `doctor_id` when creating visits. See [Doctors](doctors.md).
+Register the doctor once, then pass the returned `id` as `doctor_id` when creating visits — or register with your MIS identifier as `external_id` and pass it as `doctor_external_id`. See [Doctors](doctors.md).
 
 ## 1. Get a presigned URL
 
@@ -121,6 +121,7 @@ Authorization: <api_key>
 | `lang_code` | **Required when using inline `template`.** Transcription and note language. Two-letter ISO 639-1 code: `en`, `uk`, `pl`, `fr`, `lv`. Ignored when using `template_id` (language comes from the stored template). |
 | `recording_id` | **Required.** UUID returned from the presigned URL step. |
 | `doctor_id` | Optional. UUID of the doctor for this encounter. Create via [`POST /doctors`](https://api.tayra.health/docs#/default/create_doctor_doctors_post). |
+| `doctor_external_id` | Optional. **Alternative to `doctor_id`.** The doctor's MIS identifier set as `external_id` at [registration](doctors.md). Send at most one of `doctor_id` or `doctor_external_id`. |
 
 **201 Created**
 
@@ -136,9 +137,10 @@ Authorization: <api_key>
     "duration_seconds":  754
   },
   "doctor": {
-    "id":         "d4c8b1a2-...",
-    "last_name":  "Smith",
-    "first_name": "Jane",
+    "id":          "d4c8b1a2-...",
+    "external_id": "mis-doctor-1042",
+    "last_name":   "Smith",
+    "first_name":  "Jane",
     "patronymic":  null
   },
   "content": {
@@ -155,7 +157,7 @@ Authorization: <api_key>
 | `id` | Visit UUID. |
 | `template` | Template used. Omitted when an inline `template` was provided. |
 | `recording` | Recording metadata. `duration_seconds` is the audio duration in seconds. |
-| `doctor` | Doctor associated with the visit. |
+| `doctor` | Doctor associated with the visit. `external_id` is omitted when the doctor has none. |
 | `content` | Structured note matching the template schema. |
 | `selected_templates` | List of sub-template titles when the template uses a selector. Omitted otherwise. |
 
@@ -169,8 +171,8 @@ Authorization: <api_key>
 |---|---|---|
 | 400 | Invalid audio format. | Check the uploaded file is valid audio. |
 | 403 | No recording balance remaining. | Contact Tayra to top up. |
-| 404 | Recording, template, or doctor ID not found. | Verify the UUIDs. |
-| 422 | Inline schema validation failed. | Fix the `template` body. See [Custom Template](custom-template.md). |
+| 404 | Recording, template, or doctor not found (by `doctor_id` or `doctor_external_id`). | Verify the identifiers. |
+| 422 | Inline schema validation failed, or both `doctor_id` and `doctor_external_id` were sent. | Fix the request body. See [Custom Template](custom-template.md). |
 | 5xx | Internal error. | Retry with backoff. |
 
 Standard errors (`401`) use the same envelope and are self-explanatory during development.
