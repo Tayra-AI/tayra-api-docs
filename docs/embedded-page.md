@@ -41,37 +41,7 @@ sequenceDiagram
 
 ## 0. Create a doctor (optional)
 
-Register the doctor once and reuse the returned `id` as `doctor_id` in subsequent sessions. Linking sessions to a doctor lets you track usage per clinician and view per-doctor analytics in the admin panel.
-
-```
-POST /doctors
-Authorization: <api_key>
-```
-
-```json
-{
-  "last_name":  "Smith",
-  "first_name": "Jane",
-  "patronymic": null
-}
-```
-
-**201 Created**
-
-```json
-{
-  "id":         "d4c8b1a2-...",
-  "last_name":  "Smith",
-  "first_name": "Jane",
-  "patronymic": null
-}
-```
-
-| Field | Requirement |
-|---|---|
-| `last_name` | **Required.** |
-| `first_name` | **Required.** |
-| `patronymic` | Optional. |
+Register the doctor once and pass the returned `id` as `doctor_id` when creating sessions. See [Doctors](doctors.md).
 
 ## 1. Create a session
 
