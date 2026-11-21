@@ -46,11 +46,22 @@ Authorization: <api_key>
 | `first_name` | **Required.** |
 | `patronymic` | Optional. |
 
-If the clinic already has a doctor with this `external_id`, no new doctor is created: the existing one is returned unchanged with **200 OK**. Registration with `external_id` is therefore safe to repeat. To change a doctor's name, use [Update a doctor](#update-a-doctor).
-
 Without `external_id`, every call creates a new doctor and `external_id` is `null` in the response.
 
+| Status | When |
+|---|---|
+| `409` | The clinic already has a doctor with this `external_id`. To change that doctor, use [Update a doctor](#update-a-doctor). |
+
 ## Update a doctor
+
+By your MIS identifier:
+
+```
+PATCH /doctors/external/{external_id}
+Authorization: <api_key>
+```
+
+Or by our `id` — the only way for a doctor registered without an MIS identifier, e.g. to give them one:
 
 ```
 PATCH /doctors/{id}
@@ -65,11 +76,11 @@ Authorization: <api_key>
 
 **200 OK** — the updated doctor, in the same format as on creation.
 
-Only the fields you send are changed. Use it to correct a name or to set the MIS identifier of a doctor registered without one; `"external_id": null` removes it.
+Only the fields you send are changed. Use it to correct a name or to set or change the MIS identifier. Once set, `external_id` cannot be removed. URL-encode an `external_id` with special characters in the path.
 
 | Field | Requirement |
 |---|---|
-| `external_id` | Optional. 1–255 characters, or `null`. |
+| `external_id` | Optional. 1–255 characters. Cannot be `null`. |
 | `last_name` | Optional. Cannot be `null`. |
 | `first_name` | Optional. Cannot be `null`. |
 | `patronymic` | Optional. |
@@ -78,6 +89,7 @@ Only the fields you send are changed. Use it to correct a name or to set the MIS
 |---|---|
 | `404` | The doctor does not exist in your clinic. |
 | `409` | Another doctor of the clinic already has this `external_id`. |
+| `422` | A field that cannot be `null` was sent as `null`. |
 
 ## Link a session or visit to a doctor
 
